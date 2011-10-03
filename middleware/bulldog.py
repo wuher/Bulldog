@@ -11,6 +11,7 @@ todo: detailed description
 import re
 from django.http import HttpResponse
 from django.core.urlresolvers import resolve
+from django.utils.importlib import import_module
 
 
 __author__ = 'Janne Kuuskeri (janne.kuuskeri@gmail.com)'
@@ -93,7 +94,7 @@ class Bulldog(object):
         Get URL names of a single urls module.
         """
 
-        urlmod = __import__(modname, fromlist=['urlpatterns'])
+        urlmod = import_module(modname)
         return [url.__dict__['name'] for url in urlmod.urlpatterns if url.__dict__['name']]
 
     def _get_all_url_names(self):
@@ -178,6 +179,8 @@ class Bulldog(object):
             return None
         if self.has_perm(user, self._get_permission_name(resource_name, method.lower())):
             return None
+        elif user.is_anonymous():
+            return HttpResponse("Unauthorized", status=401)
         else:
             return HttpResponse("Forbidden", status=403)
 
